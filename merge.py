@@ -3,6 +3,8 @@
 
 Usage: merge.py <guide_url> <output.m3u> <country>=<url> [<country>=<url> ...]
 Group titles get the country label added in front, e.g. "UK | News".
+A source labelled "-" (e.g. -=extras.m3u) is a local file kept as-is; list it first so its
+names/groups win over duplicates from the country lists.
 """
 import sys
 import urllib.request
@@ -15,7 +17,10 @@ seen = set()
 
 for src in sources:
     label, url = src.split("=", 1)
-    text = urllib.request.urlopen(url, timeout=60).read().decode("utf-8", "ignore")
+    if url.startswith("http"):
+        text = urllib.request.urlopen(url, timeout=60).read().decode("utf-8", "ignore")
+    else:
+        text = open(url, encoding="utf-8").read()
     block = []
     for line in text.splitlines():
         line = line.rstrip("\r")
@@ -23,7 +28,9 @@ for src in sources:
             continue
         if line.startswith("#EXTINF"):
             block = []
-            if 'group-title="' in line:
+            if label == "-":
+                pass  # local extras: keep their own group titles
+            elif 'group-title="' in line:
                 line = re.sub(r'group-title="([^"]*)"',
                               lambda m: f'group-title="{label} | {m.group(1) or "Other"}"', line)
             else:

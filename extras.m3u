@@ -1,0 +1,9 @@
+#EXTM3U
+#EXTINF:-1 tvg-id="CBS.us@KIROTV" group-title="US | Seattle",KIRO 7 CBS (news stream)
+https://cdn-ue1-prod.tsv2.amagi.tv/linear/amg00327-coxmediagroup-kirobreaking-ono/playlist.m3u8
+#EXTINF:-1 tvg-id="" group-title="US | Seattle",KIRO Seattle (Pluto)
+https://jmp2.uk/plu-632b619c8d2a6c0007ff534e.m3u8
+#EXTINF:-1 tvg-id="Fox.us@KCPQ" group-title="US | Seattle",FOX 13 Seattle (KCPQ)
+https://aegis-cloudfront-1.tubi.video/cc394198-7bde-43e8-b186-875bc0eb3037/index.m3u8
+#EXTINF:-1 tvg-id="" group-title="US | Seattle",ABC 4 Seattle (KOMO)
+https://linear-709.frequency.stream/dist/stirr/709/hls/master/playlist.m3u8

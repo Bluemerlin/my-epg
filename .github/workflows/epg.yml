@@ -43,6 +43,7 @@ jobs:
         run: |
           BASE="https://raw.githubusercontent.com/${{ github.repository }}/guide"
           python3 merge.py "$BASE/guide.xml.gz" out/playlist.m3u \
+            "-=extras.m3u" \
             "UK=https://iptv-org.github.io/iptv/countries/uk.m3u" \
             "US=https://iptv-org.github.io/iptv/countries/us.m3u" \
             "IT=https://iptv-org.github.io/iptv/countries/it.m3u"
