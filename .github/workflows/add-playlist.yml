@@ -1,0 +1,72 @@
+name: Add playlist
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+  actions: write
+
+jobs:
+  add:
+    # Only you can add playlists, even though the repo is public
+    if: contains(github.event.issue.labels.*.name, 'add-playlist') && github.event.issue.user.login == github.repository_owner
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Read the form
+        id: form
+        env:
+          BODY: ${{ github.event.issue.body }}
+        run: |
+          python3 - <<'PY'
+          import os, re
+          body = os.environ["BODY"]
+          def field(name):
+              m = re.search(rf"### {name}\s*\n+(.+?)\s*(?:\n###|\Z)", body, re.S)
+              return m.group(1).strip() if m else ""
+          label = re.sub(r"[=\n\r]", "", field("Label"))[:30]
+          url = field("Playlist URL").split()[0] if field("Playlist URL") else ""
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"label={label}\nurl={url}\n")
+          PY
+
+      - name: Check and add
+        id: add
+        env:
+          LABEL: ${{ steps.form.outputs.label }}
+          URL: ${{ steps.form.outputs.url }}
+        run: |
+          set -e
+          fail() { echo "msg=$1" >> "$GITHUB_OUTPUT"; echo "ok=false" >> "$GITHUB_OUTPUT"; exit 0; }
+          [ -n "$LABEL" ] || fail "No label given."
+          case "$URL" in http://*|https://*) ;; *) fail "That doesn't look like a URL: \`$URL\`";; esac
+          grep -qF "=$URL" sources.txt && fail "That playlist is already in sources.txt."
+          curl -sSL -A "Mozilla/5.0" --max-time 60 "$URL" -o /tmp/new.m3u || fail "Couldn't download it."
+          head -c 200 /tmp/new.m3u | grep -q '#EXTM3U' || fail "That URL doesn't return an M3U playlist."
+          COUNT=$(grep -c '^#EXTINF' /tmp/new.m3u || true)
+          echo "$LABEL=$URL" >> sources.txt
+          git -c user.name="epg-bot" -c user.email="epg-bot@users.noreply.github.com" \
+            commit -qam "Add playlist: $LABEL (#${{ github.event.issue.number }})"
+          git push -q
+          echo "ok=true" >> "$GITHUB_OUTPUT"
+          echo "msg=Added **$LABEL** ($COUNT channels). Rebuilding now; it'll be in playlist.m3u in about 15 minutes." >> "$GITHUB_OUTPUT"
+
+      - name: Rebuild
+        if: steps.add.outputs.ok == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run epg.yml --ref main
+
+      - name: Reply and close
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MSG: ${{ steps.add.outputs.msg }}
+        run: |
+          gh issue comment ${{ github.event.issue.number }} -R ${{ github.repository }} --body "$MSG"
+          if [ "${{ steps.add.outputs.ok }}" = "true" ]; then
+            gh issue close ${{ github.event.issue.number }} -R ${{ github.repository }}
+          fi

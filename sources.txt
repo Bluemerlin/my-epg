@@ -1,0 +1,11 @@
+# Playlists merged into playlist.m3u, one per line:  Label=URL
+#
+# - The label is added in front of each channel's group, e.g. "UK | News".
+# - A label of "-" keeps the playlist's own groups and names (use for hand-made lists).
+# - Earlier lines win when the same stream appears twice, so keep extras first.
+# - Put a # in front of a line to switch it off without deleting it.
+
+-=extras.m3u
+UK=https://iptv-org.github.io/iptv/countries/uk.m3u
+US=https://iptv-org.github.io/iptv/countries/us.m3u
+IT=https://iptv-org.github.io/iptv/countries/it.m3u

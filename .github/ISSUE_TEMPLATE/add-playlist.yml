@@ -1,0 +1,21 @@
+name: Add a playlist
+description: Merge another M3U playlist into playlist.m3u
+title: "Add playlist"
+labels: ["add-playlist"]
+body:
+  - type: input
+    id: label
+    attributes:
+      label: Label
+      description: Short name added in front of its groups, e.g. "Sport" gives "Sport | News". Use - to keep the playlist's own groups.
+      placeholder: Sport
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: Playlist URL
+      description: Direct link to the .m3u / .m3u8 file
+      placeholder: https://example.com/playlist.m3u
+    validations:
+      required: true

@@ -42,16 +42,17 @@ jobs:
       - name: Build combined playlist
         run: |
           BASE="https://raw.githubusercontent.com/${{ github.repository }}/guide"
-          python3 merge.py "$BASE/guide.xml.gz" out/playlist.m3u \
-            "-=extras.m3u" \
-            "UK=https://iptv-org.github.io/iptv/countries/uk.m3u" \
-            "US=https://iptv-org.github.io/iptv/countries/us.m3u" \
-            "IT=https://iptv-org.github.io/iptv/countries/it.m3u"
+          python3 merge.py "$BASE/guide.xml.gz" sources.txt out/playlist.m3u out/extra_guides.txt
+
+      - name: Merge extra guides
+        run: |
+          python3 merge_guides.py out/guide.xml out/extra_guides.txt out/guide.xml.gz
+          ls -la out
 
       - name: Publish to 'guide' branch
         run: |
           cd out
-          rm -f guide.xml   # keep just the .gz, much smaller
+          rm -f guide.xml extra_guides.txt   # keep just the .gz, much smaller
           git init -q -b guide
           git add guide.xml.gz playlist.m3u
           git -c user.name="epg-bot" -c user.email="epg-bot@users.noreply.github.com" \
